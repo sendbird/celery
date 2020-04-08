@@ -39,7 +39,7 @@ from billiard import pool as _pool
 from billiard.compat import buf_t, setblocking, isblocking
 from billiard.einfo import ExceptionInfo
 from billiard.queues import _SimpleQueue
-from kombu.async import READ, WRITE, ERR
+from kombu.asynchronous import READ, WRITE, ERR
 from kombu.serialization import pickle as _pickle
 from kombu.utils import fxrange
 from kombu.utils.compat import get_errno
@@ -437,7 +437,7 @@ class AsynPool(_pool.Pool):
             os.close(fd)
 
     def register_with_event_loop(self, hub):
-        """Registers the async pool with the current event loop."""
+        """Registers the asynchronous pool with the current event loop."""
         self._result_handler.register_with_event_loop(hub)
         self.handle_result_event = self._result_handler.handle_event
         self._create_timelimit_handlers(hub)
@@ -459,7 +459,7 @@ class AsynPool(_pool.Pool):
         hub.on_tick.add(self.on_poll_start)
 
     def _create_timelimit_handlers(self, hub, now=time.time):
-        """For async pool this sets up the handlers used
+        """For asynchronous pool this sets up the handlers used
         to implement time limits."""
         call_later = hub.call_later
         trefs = self._tref_for_id = WeakValueDictionary()
@@ -489,7 +489,7 @@ class AsynPool(_pool.Pool):
         self.on_timeout_cancel = on_timeout_cancel
 
     def _on_soft_timeout(self, job, soft, hard, hub, now=time.time):
-        # only used by async pool.
+        # only used by asynchronous pool.
         if hard:
             self._tref_for_id[job] = hub.call_at(
                 now() + (hard - soft), self._on_hard_timeout, job,
@@ -506,7 +506,7 @@ class AsynPool(_pool.Pool):
                 self._discard_tref(job)
 
     def _on_hard_timeout(self, job):
-        # only used by async pool.
+        # only used by asynchronous pool.
         try:
             result = self._cache[job]
         except KeyError:
@@ -521,7 +521,7 @@ class AsynPool(_pool.Pool):
         self._mark_worker_as_available(inqW_fd)
 
     def _create_process_handlers(self, hub, READ=READ, ERR=ERR):
-        """For async pool this will create the handlers called
+        """For asynchronous pool this will create the handlers called
         when a process is up/down and etc."""
         add_reader, remove_reader, remove_writer = (
             hub.add_reader, hub.remove_reader, hub.remove_writer,
@@ -630,7 +630,7 @@ class AsynPool(_pool.Pool):
     def _create_write_handlers(self, hub,
                                pack=struct.pack, dumps=_pickle.dumps,
                                protocol=HIGHEST_PROTOCOL):
-        """For async pool this creates the handlers used to write data to
+        """For asynchronous pool this creates the handlers used to write data to
         child processes."""
         fileno_to_inq = self._fileno_to_inq
         fileno_to_synq = self._fileno_to_synq
