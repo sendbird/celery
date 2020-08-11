@@ -10,6 +10,10 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
+import gevent
+from gevent import monkey, signal as gevent_signal
+monkey.patch_all()
+
 import os
 import re
 import sys
@@ -20,7 +24,7 @@ from . import local  # noqa
 
 SERIES = 'cliffs'
 
-__version__ = '4.4.6'
+__version__ = '4.4.6-gevent-enforced'
 __author__ = 'Ask Solem'
 __contact__ = 'auvipy@gmail.com'
 __homepage__ = 'http://celeryproject.org'
@@ -113,10 +117,13 @@ def _patch_eventlet():
 
 
 def _patch_gevent():
-    import gevent
-    from gevent import monkey, signal as gevent_signal
-
-    monkey.patch_all()
+    # Moved to the top of this file
+    # by Tei
+    # 
+    # import gevent
+    # from gevent import monkey, signal as gevent_signal
+    #
+    # monkey.patch_all()
     if gevent.version_info[0] == 0:  # pragma: no cover
         # Signals aren't working in gevent versions <1.0,
         # and aren't monkey patched by patch_all()
